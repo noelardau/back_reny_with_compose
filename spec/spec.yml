@@ -1,0 +1,857 @@
+openapi: 3.1.0
+info:
+  title: API Gestion d'Événements
+  version: 1.1.0
+  description: >
+    API pour gérer les événements, les lieux, les réservations et les types d'événements.
+    Authentification requise pour la création d'événements.
+
+servers:
+  - url: https://api.reny_event.com/v1
+    description: Serveur de production
+  - url: http://localhost:3000/v1
+    description: Serveur local de développement
+
+paths:
+  /auth/connexion:
+    post:
+      summary: Connexion utilisateur
+      description: Authentifie un utilisateur et retourne un cookie JWT
+      tags:
+        - Authentification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnexionRequest'
+            example:
+              login: "admin"
+              mot_de_passe: "admin123"
+      responses:
+        '200':
+          description: Connexion réussie
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              example: "session_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Path=/; Expires=Wed, 21 Oct 2024 07:28:00 GMT"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnexionResponse'
+        '401':
+          description: Identifiants invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/deconnexion:
+    post:
+      summary: Déconnexion utilisateur
+      description: Déconnecte l'utilisateur en supprimant le cookie JWT
+      tags:
+        - Authentification
+      responses:
+        '200':
+          description: Déconnexion réussie
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              example: "session_token=; HttpOnly; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Déconnexion réussie"
+
+  /evenements:
+    post:
+      summary: Créer un nouvel événement
+      description: >
+        Crée un événement avec ses tarifs, types de places et fichiers associés.
+        REQUIERT une authentification JWT (cookie session_token)
+      tags:
+        - Événements
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvenementCreation'
+            example:
+              titre: "Concert Coldplay 2024"
+              description: "Concert exceptionnel de Coldplay avec setlist spécial"
+              date_debut: "2024-07-15T20:00:00Z"
+              date_fin: "2024-07-15T23:30:00Z"
+              type_id: "123e4567-e89b-12d3-a456-426614174000"
+              lieu_nom: "Stade Barea Mahamasina"
+              lieu_adresse: "Mahamasina, Antananarivo"
+              lieu_ville: "Antananarivo"
+              lieu_capacite: 5000
+              tarifs:
+                - type_place_id: "456e4567-e89b-12d3-a456-426614174000"
+                  prix: 250000
+                  nombre_places: 100
+                - type_place_id: "567e4567-e89b-12d3-a456-426614174000"
+                  prix: 75000
+                  nombre_places: 2000
+              fichiers:
+                - nom_fichier: "affiche.jpg"
+                  type_mime: "image/jpeg"
+                  type_fichier: "affiche"
+                  donnees_bytea: "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+      responses:
+        '201':
+          description: Événement créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /evenements/{id}:
+    get:
+      summary: Récupérer un événement complet par son ID
+      description: >
+        Retourne toutes les données d'un événement spécifique (lieu, tarifs, places, fichiers, statistiques)
+        sans les informations de réservation.
+      tags:
+        - Événements
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID UUID de l'événement
+          schema:
+            type: string
+            format: uuid
+            example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      responses:
+        '200':
+          description: Événement trouvé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvenementComplet'
+        '400':
+          description: ID invalide ou événement non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /evenements/reservations/{id}:
+    get:
+      summary: Récupérer toutes les réservations d'un événement
+      description: >
+        Retourne la liste complète de toutes les réservations pour un événement spécifique,
+        incluant les détails des places réservées et les informations des clients.
+      tags:
+        - Réservations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID UUID de l'événement
+          schema:
+            type: string
+            format: uuid
+            example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      responses:
+        '200':
+          description: Liste des réservations récupérée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationsEvenementResponse'
+        '400':
+          description: ID invalide ou événement non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reservations:
+    post:
+      summary: Créer une nouvelle réservation
+      description: >
+        Réserve des places pour un événement. Les places sont marquées comme réservées
+        et liées à l'email du client.
+      tags:
+        - Réservations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+            example:
+              email: "client@example.com"
+              evenement_id: "123e4567-e89b-12d3-a456-426614174000"
+              places_demandees:
+                - type_place_id: "14467104-6d39-445c-a2d1-4dd1f697ac68"
+                  nombre: 2
+                - type_place_id: "b2c3d4e5-f90c-23e4-b567-537725285111"
+                  nombre: 1
+      responses:
+        '201':
+          description: Réservation créée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Données invalides ou places insuffisantes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reservations/validate/{id}:
+    post:
+      summary: Valider une réservation
+      description: >
+        Valide une réservation existante. Cette opération vérifie que la réservation
+        est valide et peut être confirmée.
+      tags:
+        - Réservations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID UUID de la réservation à valider
+          schema:
+            type: string
+            format: uuid
+            example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      responses:
+        '200':
+          description: Réservation validée avec succès
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "ok"
+        '400':
+          description: ID invalide ou réservation non trouvée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Réservation non trouvée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur interne du serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session_token
+
+  schemas:
+    # Réponses standardisées
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Opération réussie"
+        id:
+          type: string
+          format: uuid
+          example: "e7b8c2f1-1234-4c1a-8b9f-12ef34567890"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Message d'erreur détaillé"
+
+    # Nouveaux schémas pour les réservations d'événement
+    ReservationsEvenementResponse:
+      type: object
+      properties:
+        evenement_id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        evenement_titre:
+          type: string
+          example: "Concert Coldplay 2024"
+        total_reservations:
+          type: integer
+          minimum: 0
+          example: 2
+        reservations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReservationDetail'
+
+    ReservationDetail:
+      type: object
+      properties:
+        reservation_id:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        email:
+          type: string
+          format: email
+          example: "client@example.com"
+        etat_reservation:
+          type: string
+          example: "en_attente"
+        nombre_places_reservees:
+          type: integer
+          minimum: 0
+          example: 3
+        total_reservation:
+          type: number
+          format: float
+          minimum: 0
+          example: 450000
+        details_places:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaceDetail'
+
+    PlaceDetail:
+      type: object
+      properties:
+        place_id:
+          type: string
+          format: uuid
+          example: "f6g7h8i9-j0k1-2345-fghi-678901234567"
+        numero_place:
+          type: string
+          example: "VIP-A1B2C3D4-001"
+        type_place_id:
+          type: string
+          format: uuid
+          example: "e5f6g7h8-i9j0-1234-efgh-567890123456"
+        type_place_nom:
+          type: string
+          example: "VIP"
+        tarif:
+          type: number
+          format: float
+          minimum: 0
+          example: 150000
+        etat_place:
+          $ref: '#/components/schemas/EtatPlaceDetail'
+
+    EtatPlaceDetail:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "reservee"
+        description:
+          type: string
+          example: "Place réservée temporairement"
+
+    # Authentification
+    ConnexionRequest:
+      type: object
+      required:
+        - login
+        - mot_de_passe
+      properties:
+        login:
+          type: string
+          example: "admin"
+        mot_de_passe:
+          type: string
+          example: "admin123"
+
+    ConnexionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Connexion réussie"
+        utilisateur:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: "123e4567-e89b-12d3-a456-426614174000"
+            login:
+              type: string
+              example: "admin"
+
+    # Réservations
+    ReservationRequest:
+      type: object
+      required:
+        - email
+        - evenement_id
+        - places_demandees
+      properties:
+        email:
+          type: string
+          format: email
+          example: "client@example.com"
+        evenement_id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        places_demandees:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/TypePlaceDemande'
+
+    TypePlaceDemande:
+      type: object
+      required:
+        - type_place_id
+        - nombre
+      properties:
+        type_place_id:
+          type: string
+          format: uuid
+          example: "14467104-6d39-445c-a2d1-4dd1f697ac68"
+        nombre:
+          type: integer
+          minimum: 1
+          example: 2
+
+    # Événements
+    EvenementCreation:
+      type: object
+      required:
+        - titre
+        - date_debut
+        - date_fin
+        - type_id
+        - lieu_nom
+        - lieu_adresse
+        - lieu_ville
+        - tarifs
+      properties:
+        titre:
+          type: string
+          minLength: 1
+          maxLength: 150
+          example: "Concert Coldplay 2024"
+        description:
+          type: string
+          example: "Concert exceptionnel"
+        date_debut:
+          type: string
+          format: date-time
+        date_fin:
+          type: string
+          format: date-time
+        type_id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        lieu_nom:
+          type: string
+          minLength: 1
+          maxLength: 150
+          example: "Stade Barea Mahamasina"
+        lieu_adresse:
+          type: string
+          example: "Mahamasina, Antananarivo"
+        lieu_ville:
+          type: string
+          maxLength: 100
+          example: "Antananarivo"
+        lieu_capacite:
+          type: integer
+          minimum: 0
+          nullable: true
+          example: 5000
+        tarifs:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/TarifCreation'
+        fichiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/FichierCreation'
+
+    TarifCreation:
+      type: object
+      required:
+        - type_place_id
+        - prix
+        - nombre_places
+      properties:
+        type_place_id:
+          type: string
+          format: uuid
+          example: "456e4567-e89b-12d3-a456-426614174000"
+        prix:
+          type: number
+          format: float
+          minimum: 0
+          example: 250000
+        nombre_places:
+          type: integer
+          minimum: 1
+          example: 100
+
+    FichierCreation:
+      type: object
+      required:
+        - nom_fichier
+        - type_mime
+        - type_fichier
+        - donnees_bytea
+      properties:
+        nom_fichier:
+          type: string
+          maxLength: 255
+          example: "affiche.jpg"
+        type_mime:
+          type: string
+          maxLength: 100
+          example: "image/jpeg"
+        type_fichier:
+          type: string
+          enum: [photo, affiche, document]
+          example: "affiche"
+        donnees_bytea:
+          type: string
+          format: byte
+          description: "Données binaires encodées en base64"
+          example: "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+
+    # Réponses détaillées
+    EvenementComplet:
+      type: object
+      properties:
+        evenement_id:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        titre:
+          type: string
+          example: "Concert de Jazz International"
+        description_evenement:
+          type: string
+          nullable: true
+          example: "Un concert exceptionnel avec les plus grands noms du jazz contemporain"
+        date_debut:
+          type: string
+          format: date-time
+          example: "2024-07-15T20:00:00Z"
+        date_fin:
+          type: string
+          format: date-time
+          example: "2024-07-15T23:30:00Z"
+        type_evenement:
+          $ref: '#/components/schemas/TypeEvenement'
+        lieu:
+          $ref: '#/components/schemas/Lieu'
+        tarifs_et_places:
+          type: array
+          items:
+            $ref: '#/components/schemas/TarifAvecPlaces'
+        statistiques_globales:
+          $ref: '#/components/schemas/StatistiquesGlobales'
+        fichiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/FichierMetadata'
+        informations_complementaires:
+          $ref: '#/components/schemas/InformationsComplementaires'
+
+    TypeEvenement:
+      type: object
+      properties:
+        type_evenement_id:
+          type: string
+          format: uuid
+          example: "b2c3d4e5-f6g7-8901-bcde-f23456789012"
+        type_evenement_nom:
+          type: string
+          example: "Concert"
+        type_evenement_description:
+          type: string
+          nullable: true
+          example: "Événement musical avec artistes sur scène"
+
+    Lieu:
+      type: object
+      properties:
+        lieu_id:
+          type: string
+          format: uuid
+          example: "c3d4e5f6-g7h8-9012-cdef-345678901234"
+        lieu_nom:
+          type: string
+          example: "Grande Salle Symphonique"
+        lieu_adresse:
+          type: string
+          example: "123 Avenue des Arts"
+        lieu_ville:
+          type: string
+          example: "Paris"
+        lieu_capacite:
+          type: integer
+          nullable: true
+          minimum: 0
+          example: 1500
+
+    TarifAvecPlaces:
+      type: object
+      properties:
+        tarif_id:
+          type: string
+          format: uuid
+          example: "d4e5f6g7-h8i9-0123-defg-456789012345"
+        type_place_id:
+          type: string
+          format: uuid
+          example: "e5f6g7h8-i9j0-1234-efgh-567890123456"
+        type_place_nom:
+          type: string
+          example: "VIP"
+        type_place_description:
+          type: string
+          nullable: true
+          example: "Place premium avec avantages exclusifs"
+        type_place_avantages:
+          type: string
+          nullable: true
+          example: "Accès lounge, parking dédié, restauration incluse"
+        prix:
+          type: number
+          format: float
+          minimum: 0
+          example: 150.00
+        nombre_places_total:
+          type: integer
+          minimum: 0
+          example: 50
+        statistiques_etat:
+          $ref: '#/components/schemas/StatistiquesEtat'
+        places:
+          type: array
+          items:
+            $ref: '#/components/schemas/Place'
+
+    Place:
+      type: object
+      properties:
+        place_id:
+          type: string
+          format: uuid
+          example: "f6g7h8i9-j0k1-2345-fghi-678901234567"
+        numero_place:
+          type: string
+          example: "VIP-A1B2C3D4-001"
+        etat:
+          $ref: '#/components/schemas/Etat'
+
+    Etat:
+      type: object
+      properties:
+        etat_code:
+          type: string
+          example: "disponible"
+        etat_description:
+          type: string
+          example: "Place disponible à la vente"
+
+    StatistiquesEtat:
+      type: object
+      properties:
+        places_disponibles:
+          type: integer
+          minimum: 0
+          example: 45
+        places_vendues:
+          type: integer
+          minimum: 0
+          example: 5
+        places_reservees:
+          type: integer
+          minimum: 0
+          example: 0
+        places_annulees:
+          type: integer
+          minimum: 0
+          example: 0
+        places_maintenance:
+          type: integer
+          minimum: 0
+          example: 0
+
+    StatistiquesGlobales:
+      type: object
+      properties:
+        total_places:
+          type: integer
+          minimum: 0
+          example: 350
+        places_disponibles:
+          type: integer
+          minimum: 0
+          example: 320
+        places_vendues:
+          type: integer
+          minimum: 0
+          example: 25
+        places_reservees:
+          type: integer
+          minimum: 0
+          example: 5
+        places_annulees:
+          type: integer
+          minimum: 0
+          example: 0
+        places_maintenance:
+          type: integer
+          minimum: 0
+          example: 0
+        taux_occupation:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          example: 7.14
+        capacite_restante:
+          type: integer
+          nullable: true
+          minimum: 0
+          example: 320
+        pourcentage_remplissage:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          example: 8.57
+
+    FichierMetadata:
+      type: object
+      properties:
+        fichier_id:
+          type: string
+          format: uuid
+          example: "n4o5p6q7-r8s9-0123-nopq-456789012345"
+        nom_fichier:
+          type: string
+          example: "affiche-concert-jazz.jpg"
+        type_mime:
+          type: string
+          example: "image/jpeg"
+        taille_bytes:
+          type: integer
+          minimum: 1
+          example: 2048576
+        type_fichier:
+          type: string
+          enum: [photo, affiche, document]
+          example: "affiche"
+        date_upload:
+          type: string
+          format: date-time
+          example: "2024-06-01T10:30:00Z"
+
+    InformationsComplementaires:
+      type: object
+      properties:
+        duree_evenement_minutes:
+          type: integer
+          minimum: 0
+          example: 210
+        jours_restants:
+          type: integer
+          minimum: 0
+          example: 44
+        est_passe:
+          type: boolean
+          example: false
+        est_actuel:
+          type: boolean
+          example: false
+        est_futur:
+          type: boolean
+          example: true
+        prix_minimum:
+          type: number
+          format: float
+          minimum: 0
+          example: 35.00
+        prix_maximum:
+          type: number
+          format: float
+          minimum: 0
+          example: 150.00
+        nombre_types_places:
+          type: integer
+          minimum: 0
+          example: 3
+        statut:
+          type: string
+          enum: [termine, en_cours, a_venir]
+          example: "a_venir"
+

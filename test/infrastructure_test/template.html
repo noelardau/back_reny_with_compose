@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billet - {{.Evenement.Nom}}</title>
+    <style>
+        /* Votre CSS reste identique */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .ticket { background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); width: 100%; max-width: 400px; overflow: hidden; position: relative; }
+        .ticket-header { background: linear-gradient(135deg, #2c3e50, #34495e); color: white; padding: 25px; text-align: center; position: relative; }
+        .ticket-header::after { content: ''; position: absolute; bottom: -10px; left: 0; right: 0; height: 20px; background: white; border-radius: 50% 50% 0 0; }
+        .event-name { font-size: 24px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .event-location { font-size: 16px; opacity: 0.9; margin-bottom: 5px; }
+        .event-date { font-size: 14px; opacity: 0.8; }
+        .ticket-body { padding: 30px 25px; }
+        .ticket-info { display: grid; gap: 20px; margin-bottom: 25px; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .info-label { font-weight: 600; color: #555; font-size: 14px; }
+        .info-value { font-weight: bold; color: #2c3e50; font-size: 15px; }
+        .places-section { background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0; }
+        .places-title { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; text-align: center; }
+        .places-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .place-number { background: white; border: 2px solid #e74c3c; border-radius: 8px; padding: 8px 5px; text-align: center; font-weight: bold; font-size: 12px; color: #e74c3c; }
+        .price-section { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .total-price { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
+        .price-label { font-size: 14px; opacity: 0.9; }
+        .ticket-footer { background: #ecf0f1; padding: 20px 25px; text-align: center; border-top: 1px dashed #bdc3c7; }
+        .reservation-id { font-family: 'Courier New', monospace; font-size: 12px; color: #7f8c8d; margin-bottom: 10px; }
+        .barcode { font-family: 'Libre Barcode 128', cursive; font-size: 36px; letter-spacing: 2px; margin: 10px 0; }
+        .terms { font-size: 10px; color: #95a5a6; margin-top: 10px; line-height: 1.4; }
+        .status-badge { position: absolute; top: 20px; right: 20px; background: #27ae60; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .perforation { position: absolute; left: 20px; right: 20px; bottom: -5px; height: 10px; background: repeating-linear-gradient(90deg, transparent, transparent 10px, #bdc3c7 10px, #bdc3c7 20px); }
+        @media print { body { background: white !important; } .ticket { box-shadow: none; max-width: none; } }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+128&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="ticket">
+        {{if .EtatReservation}}
+        <div class="status-badge">{{.EtatReservation}}</div>
+        {{end}}
+        
+        <div class="ticket-header">
+            <div class="event-name">{{.Evenement.Nom}}</div>
+            <div class="event-location">{{.Evenement.Lieu}}</div>
+            <div class="event-date">
+                {{.Evenement.DateDebut.Format "02/01/2006"}} • 
+                {{.Evenement.DateDebut.Format "15:04"}}
+            </div>
+        </div>
+
+        <div class="ticket-body">
+            <div class="ticket-info">
+                <div class="info-row">
+                    <span class="info-label">RÉSERVATION</span>
+                    <span class="info-value">#{{.ReservationID | slice 0 8}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">EMAIL</span>
+                    <span class="info-value">{{.Email}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">DATE RÉSERVATION</span>
+                    <span class="info-value">{{.DateReservation.Format "02/01/2006"}}</span>
+                </div>
+            </div>
+
+            <div class="places-section">
+                <div class="places-title">
+                    {{.DetailsPlaces.NombrePlaces}} PLACE{{if gt .DetailsPlaces.NombrePlaces 1}}S{{end}} • 
+                    {{range $index, $price := .DetailsPlaces.PrixParPlace}}
+                        {{if $index}}/{{end}}{{$price | printf "%.2f"}}€
+                    {{end}}
+                </div>
+                <div class="places-grid">
+                    {{range .DetailsPlaces.NumerosPlaces}}
+                    <div class="place-number">{{.}}</div>
+                    {{end}}
+                </div>
+            </div>
+
+            <div class="price-section">
+                <div class="total-price">{{.DetailsPlaces.TotalReservation | printf "%.2f"}}€</div>
+                <div class="price-label">TOTAL PAYÉ</div>
+            </div>
+        </div>
+
+        <div class="perforation"></div>
+
+        <div class="ticket-footer">
+            <div class="reservation-id">{{.ReservationID}}</div>
+            <div class="barcode">*{{.ReservationID | slice 0 12}}*</div>
+            <div class="terms">
+                Présentez ce billet à l'entrée • Non remboursable • Échange sous conditions
+            </div>
+        </div>
+    </div>
+</body>
+</html>

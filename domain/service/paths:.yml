@@ -1,0 +1,30 @@
+paths:
+  /evenements:
+    post:
+      summary: Créer un nouvel événement
+      description: Crée un événement avec ses tarifs, types de places et fichiers associés.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvenementCreation'
+      responses:
+        '201':
+          description: Événement créé avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    example: "e7b8c2f1-1234-4c1a-8b9f-12ef34567890"
+                  message:
+                    type: string
+                    example: "Événement créé avec succès"
+        '400':
+          description: Données invalides
+        '500':
+          description: Erreur interne du serveur
