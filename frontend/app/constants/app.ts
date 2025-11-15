@@ -1,6 +1,6 @@
   export const type_evenement = [
-    { value: '"08fc5d20-89f5-490f-9f19-f31bf0505521"', label: 'Exposition' },
-    { value: '"241a7483-f80c-4d96-bad8-8f2938a0a9e4"', label: 'Foire' },
+    { value: "08fc5d20-89f5-490f-9f19-f31bf0505521", label: 'Exposition' },
+    { value: "76b89eed-e119-4286-bbc5-9d85759df6f6", label: 'Foire' },
   ];
 
   export const type_place = [
