@@ -18,6 +18,7 @@ import { IconCheck, IconClock, IconMail, IconId } from '@tabler/icons-react';
 import type { reservation } from '~/interfaces/reservation';
 import { useQueryClient } from '@tanstack/react-query';
 import { notifications} from '@mantine/notifications';
+import { API_BASE_URL } from '~/constants/api';
 
 export function TableResa({ reservations }: { reservations: reservation[] }) {
   const theme = useMantineTheme();
@@ -32,7 +33,7 @@ export function TableResa({ reservations }: { reservations: reservation[] }) {
     setValidatingIds((prev) => new Set(prev).add(id));
 
     try {
-      const res = await fetch(`http://localhost:3000/v1/reservations/validate/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/reservations/validate/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });

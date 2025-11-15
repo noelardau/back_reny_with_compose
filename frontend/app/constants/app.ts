@@ -8,5 +8,5 @@
     { value: "3d91ee51-7696-4634-a3c3-3d7ab7d376bd", label: 'VIP' },
   ];
 
-  export const Id_event_added = "c988e859-1f0e-4596-99af-fdb32cf386cd"
+  export const Id_event_added = "d81df125-41a5-4a04-a81a-a98e8c5f61da"
 

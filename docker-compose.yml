@@ -73,7 +73,10 @@ services:
       - DB_SSLMODE=disable
       - SERVER_PORT=3000
     ports:
-      - "3000:3000"  # ← Expose le port où ton serveur écoute (8080)
+      - "3000:3000"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4 
     command: ["go", "run", "main.go"]  # Simplifié, et dans le bon dossier
     volumes:
       - .:/app
