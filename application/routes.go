@@ -27,13 +27,9 @@ func SetupRoutes(r chi.Router, evenementService interfaces.EvenementService, aut
 		r.Get("/evenements/{id}", handler.GetEvenementByIDHandler(evenementService))
 		r.Get("/evenements/reservations/{id}", handler.AllReservationsHandler(evenementService))
 		r.Post("/reservations", handler.ReserverHandler(evenementService))
-
-		// Routes protégées (nécessitent une authentification)
-		// r.Group(func(r chi.Router) {
-		// r.Use(handler.AuthMiddleware) // Applique le middleware d'auth à toutes les routes de ce groupe
 		r.Post("/evenements", handler.CreationEvenementHandler(evenementService))
 		r.Post("/reservations/validate/{id}", handler.ValiderReservation(evenementService))
 		r.Get("/evenements/all", handler.GetAllEvents(evenementService))
-		// })
+		r.Get("/reservation/{id}", handler.GetReservationByID(evenementService))
 	})
 }

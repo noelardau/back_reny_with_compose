@@ -9,7 +9,7 @@ import (
 
 func CreateNewPgxConnexionPool() (*pgxpool.Pool, error) {
 	// Chaîne de connexion PostgreSQL locale
-	config, err := pgxpool.ParseConfig("postgresql://admin:admin@postgres:5432/renydb")
+	config, err := pgxpool.ParseConfig("postgresql://postgres:BoissonXXLenergy261001..@localhost:5432/reny_event_db")
 	if err != nil {
 		return nil, err
 	}

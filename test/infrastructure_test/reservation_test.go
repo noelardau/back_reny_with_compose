@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/J2d6/reny_event/domain/models"
+	// infrastructure "github.com/J2d6/reny_event/infrastructure/email"
 	"github.com/google/uuid"
 )
 
@@ -70,6 +71,19 @@ func TestValidateReservation(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to validate reservation : %v", err)
 		}
+	})
+}
+
+
+func TestGetReservationByID(t *testing.T) {
+	t.Run("Get reservation by id", func (t *testing.T) {
+		repo := CreateRepository(t)
+		id_reservation := uuid.MustParse("900b487f-6ed7-4259-bee3-b8f397360772")
+		_, err := repo.GetReservationByID(id_reservation)
+		if err != nil {
+			t.Errorf("Failed to get reservation : %v", err)
+		}
+
 	})
 }
 

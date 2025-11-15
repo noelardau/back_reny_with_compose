@@ -24,5 +24,14 @@ func TestLectureEvenement(t *testing.T) {
 		_ , err := repo.GetEvenementByID(evenement_id)
 		infrastructure.AssertError(t, err)
 	})
+
+
+	t.Run("Get all events", func (t *testing.T) {
+		repo:= infrastructure.CreateRepository(t)
+		reservation , err := repo.GetAllEvents()
+		if err != nil {
+			t.Errorf("Failed to get all evenets : %v, RESA : %v", err, reservation)
+		}
+	})
 	
 }
