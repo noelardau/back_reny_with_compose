@@ -122,6 +122,8 @@ func (repo EvenementRepository) ValidateReservation(id_reservation uuid.UUID) er
 
 
 
+
+
 func parseFlexibleTime(timeStr string) (time.Time, error) {
     formats := []string{
         time.RFC3339,                    // "2006-01-02T15:04:05Z07:00"
