@@ -41,14 +41,13 @@ func (serrvice EvenementService) ValidateReservation(id_Evenement uuid.UUID) err
     return  nil
 }
 
-func (service EvenementService) GetReservationByID(id_reservation uuid.UUID) (*models.ReservationCompleteGet, error) {
-    reservation, err := service.repo.GetReservationByID(id_reservation)
+func (service EvenementService) GetReservationByID(reservationID uuid.UUID) (*models.ReservationCompleteT, error) {
+    reservation, err := service.repo.GetReservationByID(reservationID)
     if err != nil {
         return nil, err
     }
     return reservation, nil
 }
-
 
 
 func mapRequeteReservation(r *http.Request) (models.ReservationRequest, error) {

@@ -121,24 +121,25 @@ func (repo EvenementRepository) ValidateReservation(id_reservation uuid.UUID) er
 
 
 
-func (repo EvenementRepository) GetReservationByID(id_reservation uuid.UUID)(*models.ReservationCompleteGet, error) {
-        var reservationData []byte
-        var reservation models.ReservationCompleteGet
-        
-        query := "SELECT obtenir_reservation_par_id($1) as reservation_data"
-        
-        err := repo.conn.QueryRow(context.Background(), query, id_reservation).Scan(&reservationData)
-        if err != nil {
-            return nil, fmt.Errorf("erreur base de données: %v", err)
-        }
-        
-        // Unmarshal du JSON dans la struct
-        err = json.Unmarshal(reservationData, &reservation)
-        if err != nil {
-            return nil, fmt.Errorf("erreur parsing JSON: %v", err)
-        }
-        
-        return &reservation, nil
+func (repo EvenementRepository) GetReservationByID(reservationID uuid.UUID) (*models.ReservationCompleteT, error) {
+    var reservationData []byte
+    
+    err := repo.conn.QueryRow(context.Background(), 
+        "SELECT obtenir_reservation_par_id($1) as reservation_data",
+        reservationID,
+    ).Scan(&reservationData)
+    
+    if err != nil {
+        return nil, err
+    }
+
+    var reservation models.ReservationCompleteT
+    err = json.Unmarshal(reservationData, &reservation)
+    if err != nil {
+        return nil, err
+    }
+
+    return &reservation, nil
 }
 
 
