@@ -24,7 +24,7 @@ func SendGomail(reservationInfos models.ReservationDetails)  {
 	}	
 	t.Execute(&body,reservationInfos)
 
-	CreateQR()
+	CreateQR(reservationInfos.ReservationID)
 	// fmt.Println("CREATE QR")
 	m := gomail.NewMessage()
 	m.SetHeader("From", "j2d6.pro@gmail.com")

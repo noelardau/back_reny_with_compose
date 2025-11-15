@@ -33,6 +33,7 @@ func SetupRoutes(r chi.Router, evenementService interfaces.EvenementService, aut
 		// r.Use(handler.AuthMiddleware) // Applique le middleware d'auth à toutes les routes de ce groupe
 		r.Post("/evenements", handler.CreationEvenementHandler(evenementService))
 		r.Post("/reservations/validate/{id}", handler.ValiderReservation(evenementService))
+		r.Get("/evenements/all", handler.GetAllEvents(evenementService))
 		// })
 	})
 }

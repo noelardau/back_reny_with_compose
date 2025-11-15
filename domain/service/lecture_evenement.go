@@ -22,3 +22,12 @@ func (service EvenementService) GetEvenementByID(id_evenement uuid.UUID) (*model
 
 	return  &evenement, nil
 }
+
+func (service EvenementService) GetAllEvents() ([]models.EvenementCompletGet, error) {
+	allEvents, err := service.repo.GetAllEvents()
+	if err != nil {
+		return nil, err
+	}
+	return allEvents, nil
+
+}

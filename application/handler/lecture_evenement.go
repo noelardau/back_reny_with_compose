@@ -29,3 +29,23 @@ func GetEvenementByIDHandler(service interfaces.EvenementService) http.HandlerFu
         json.NewEncoder(w).Encode(evenement)
     }
 }
+
+
+func GetAllEvents(service interfaces.EvenementService) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+
+		evenements, err := service.GetAllEvents()
+		if err!= nil {
+			w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(models.ErrorResponse{
+                Error: err.Error(),
+            })
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusOK)
+        json.NewEncoder(w).Encode(evenements)
+    }
+}

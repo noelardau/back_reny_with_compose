@@ -2,6 +2,8 @@ package repository
 
 
 var (
+
+    GET_ALL_EVENETS_QUERY = `SELECT obtenir_tous_evenements() as evenements;`
     CREATE_EVENEMENT_COMPLET_QUERY string = `
        SELECT creer_evenement_complet($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     `

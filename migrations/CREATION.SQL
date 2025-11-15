@@ -1297,3 +1297,63 @@ BEGIN
     RETURN result;
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+------------------------------------GET EVENTS
+
+
+
+CREATE OR REPLACE FUNCTION obtenir_tous_evenements()
+RETURNS JSONB AS $$
+DECLARE
+    result JSONB;
+BEGIN
+    SELECT jsonb_agg(
+        jsonb_build_object(
+            'evenement_id', e.id,
+            'titre', e.titre,
+            'description', e.description,
+            'date_debut', e.date_debut,
+            'date_fin', e.date_fin,
+            'type_evenement', jsonb_build_object(
+                'id', te.id,
+                'nom', te.nom,
+                'description', te.description
+            ),
+            'lieu', jsonb_build_object(
+                'id', l.id,
+                'nom', l.nom,
+                'adresse', l.adresse,
+                'ville', l.ville,
+                'capacite', l.capacite
+            ),
+            'tarifs', (
+                SELECT jsonb_agg(
+                    jsonb_build_object(
+                        'tarif_id', t.id,
+                        'prix', t.prix,
+                        'nombre_places', t.nombre_places,
+                        'type_place', jsonb_build_object(
+                            'id', tp.id,
+                            'nom', tp.nom,
+                            'description', tp.description,
+                            'avantages', tp.avantages
+                        )
+                    )
+                )
+                FROM tarif t
+                JOIN type_place tp ON t.type_place_id = tp.id
+                WHERE t.evenement_id = e.id
+            )
+        )
+        ORDER BY e.date_debut DESC
+    )
+    INTO result
+    FROM evenement e
+    JOIN type_evenement te ON e.type_id = te.id
+    JOIN lieu l ON e.lieu_id = l.id;
+    
+    RETURN COALESCE(result, '[]'::jsonb);
+END;
+$$ LANGUAGE plpgsql;
