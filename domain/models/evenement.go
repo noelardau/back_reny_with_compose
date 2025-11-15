@@ -44,3 +44,4 @@ type TypePlace struct {
     Description string    `json:"description"`
     Avantages   string    `json:"avantages"`
 }
+

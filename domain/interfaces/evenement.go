@@ -33,6 +33,8 @@ type EvenementService interface {
 	ValidateReservation(id_Evenement uuid.UUID) error
 	GetAllEvents() ([]models.EvenementCompletGet, error)
 	GetReservationByID(id_reservation uuid.UUID ) (*models.ReservationCompleteGet, error)
+	GetTypePlaces()([]models.TypePlaceGet, error)
+	GetAllTypeEvenements() ([]models.TypeEvenementGet, error)
 }
 
 
@@ -44,6 +46,8 @@ type EvenementRepository interface {
 	ValidateReservation(id_Evenement uuid.UUID) error
 	GetAllEvents() ([]models.EvenementCompletGet, error)
 	GetReservationByID(id_reservation uuid.UUID) (*models.ReservationCompleteGet, error)
+	GetTypePlaces()([]models.TypePlaceGet, error)
+	GetAllTypeEvenements() ([]models.TypeEvenementGet, error)
 }
 
 

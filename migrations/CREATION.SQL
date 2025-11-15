@@ -1357,3 +1357,113 @@ BEGIN
     RETURN COALESCE(result, '[]'::jsonb);
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION obtenir_reservation_par_id(p_reservation_id UUID)
+RETURNS JSONB AS $$
+DECLARE
+    result JSONB;
+BEGIN
+    SELECT jsonb_build_object(
+        'reservation_id', r.id,
+        'email', r.email,
+        'date_reservation', to_char(r.date_reservation, 'YYYY-MM-DD"T"HH24:MI:SS'),
+        'etat', r.etat,
+        'evenement', jsonb_build_object(
+            'id', e.id,
+            'titre', e.titre,
+            'description', e.description,
+            'date_debut', to_char(e.date_debut, 'YYYY-MM-DD"T"HH24:MI:SS'),
+            'date_fin', to_char(e.date_fin, 'YYYY-MM-DD"T"HH24:MI:SS'),
+            'type_evenement', jsonb_build_object(
+                'id', te.id,
+                'nom', te.nom
+            ),
+            'lieu', jsonb_build_object(
+                'id', l.id,
+                'nom', l.nom,
+                'ville', l.ville
+            )
+        ),
+        'places', (
+            SELECT jsonb_agg(
+                jsonb_build_object(
+                    'place_id', p.id,
+                    'numero', p.numero,
+                    'tarif', t.prix,
+                    'type_place', jsonb_build_object(
+                        'id', tp.id,
+                        'nom', tp.nom
+                    )
+                )
+            )
+            FROM reservation_place rp
+            JOIN place p ON rp.place_id = p.id
+            JOIN tarif t ON p.tarif_id = t.id
+            JOIN type_place tp ON t.type_place_id = tp.id
+            WHERE rp.reservation_id = r.id
+        ),
+        'total', (
+            SELECT SUM(t.prix)
+            FROM reservation_place rp
+            JOIN place p ON rp.place_id = p.id
+            JOIN tarif t ON p.tarif_id = t.id
+            WHERE rp.reservation_id = r.id
+        )
+    )
+    INTO result
+    FROM reservation r
+    JOIN reservation_place rp ON r.id = rp.reservation_id
+    JOIN place p ON rp.place_id = p.id
+    JOIN tarif t ON p.tarif_id = t.id
+    JOIN evenement e ON t.evenement_id = e.id
+    JOIN type_evenement te ON e.type_id = te.id
+    JOIN lieu l ON e.lieu_id = l.id
+    WHERE r.id = p_reservation_id
+    GROUP BY r.id, e.id, te.id, l.id;
+    
+    RETURN COALESCE(result, '{}'::jsonb);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION obtenir_tous_types_places()
+RETURNS JSONB AS $$
+DECLARE
+    result JSONB;
+BEGIN
+    SELECT jsonb_agg(
+        jsonb_build_object(
+            'id', id,
+            'nom', nom,
+            'description', description,
+            'avantages', avantages
+        )
+        ORDER BY nom
+    )
+    INTO result
+    FROM type_place;
+    
+    RETURN COALESCE(result, '[]'::jsonb);
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION obtenir_tous_types_evenements()
+RETURNS JSONB AS $$
+DECLARE
+    result JSONB;
+BEGIN
+    SELECT jsonb_agg(
+        jsonb_build_object(
+            'id', id,
+            'nom', nom,
+            'description', description
+        )
+        ORDER BY nom
+    )
+    INTO result
+    FROM type_evenement;
+    
+    RETURN COALESCE(result, '[]'::jsonb);
+END;
+$$ LANGUAGE plpgsql;

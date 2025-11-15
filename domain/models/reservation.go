@@ -119,3 +119,10 @@ type TypePlaceSimpleGet struct {
     ID  uuid.UUID `json:"id"`
     Nom string    `json:"nom"`
 }
+
+type TypePlaceGet struct {
+    ID          uuid.UUID `json:"id"`
+    Nom         string    `json:"nom"`
+    Description string    `json:"description"`
+    Avantages   string    `json:"avantages"`
+}
