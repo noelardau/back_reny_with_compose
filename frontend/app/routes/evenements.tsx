@@ -1,100 +1,197 @@
-import { Button, Container, Flex, Text, Title, Pagination } from "@mantine/core";
+import {
+  Button,
+  Container,
+  Flex,
+  Text,
+  Title,
+  Pagination,
+  TextInput,
+  Group,
+  ActionIcon,
+} from "@mantine/core";
 import { Link, useSearchParams } from "react-router";
 import { EventsGrid } from "~/components/EventsGrid";
 import { routeProtection } from "~/utils/routeProtection";
-import event1 from "../assets/Foaran_ny_fetin_ny_reny.jpg";
 import type { Route } from "./+types/evenements";
-import { Id_event_added } from "~/constants/app";
+import { useQueryGet } from "~/hooks/useQueryGet";
+import { api_paths } from "~/constants/api";
+import dayjs from "dayjs";
+import "dayjs/locale/fr";
+import srcImg from "../assets/Foaran_ny_fetin_ny_reny.jpg";
+import { IconSearch, IconX } from "@tabler/icons-react";
+import { useMemo, useEffect, useState } from "react";
 
-const ITEMS_PER_PAGE = 4;
+dayjs.locale("fr");
+const ITEMS_PER_PAGE = 4; // ← 4 événements par page
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader() {
   routeProtection();
-
-  const url = new URL(request.url);
-  const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
-
-  // Liste complète des événements
-  const allEvents = [
-    {
-      id: Id_event_added,
-      title: "Foire fête des mères",
-      image: event1,
-      date: "August 18, 2022",
-    },
-    {
-      id:"fec4c386-7722-4fd0-aded-d18a8cbec20e",
-      title: "Best forests to visit in North America",
-      image:
-        "https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=720&q=80",
-      date: "August 27, 2022",
-    },
-    {
-      id: 4,
-      title: "Hawaii beaches review: better than you think",
-      image:
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=720&q=80",
-      date: "September 9, 2022",
-    },
-    {
-      id: 5,
-      title: "Mountains at night: 12 best locations to enjoy the view",
-      image:
-        "https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=720&q=80",
-      date: "September 12, 2022",
-    },
-    // Ajoute d'autres événements ici...
-  ];
-
-  const total = allEvents.length;
-  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
-  const validPage = Math.min(Math.max(1, page), totalPages);
-
-  const start = (validPage - 1) * ITEMS_PER_PAGE;
-  const end = start + ITEMS_PER_PAGE;
-  const paginatedEvents = allEvents.slice(start, end);
-
-  return {
-    events: paginatedEvents,
-    pagination: {
-      page: validPage,
-      totalPages,
-      total,
-      hasNext: validPage < totalPages,
-      hasPrev: validPage > 1,
-    },
-  };
+  return null;
 }
 
-export default function Evenements({ loaderData }: Route.ComponentProps) {
+export default function Evenements() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentPage = loaderData.pagination.page;
-  const totalPages = loaderData.pagination.totalPages;
+  const urlQuery = searchParams.get("q")?.trim() || "";
+  const urlPage = searchParams.get("page");
+  const currentPage = Math.max(1, parseInt(urlPage || "1", 10));
+
+  // Champ de recherche local
+  const [inputValue, setInputValue] = useState(urlQuery);
+
+  // Synchroniser le champ avec l'URL
+  useEffect(() => {
+    setInputValue(urlQuery);
+  }, [urlQuery]);
+
+  const { data, isPending, error } = useQueryGet(["evenements"], api_paths.getAllEvenements);
+
+  // === Tous les événements transformés ===
+  const allEvents = useMemo(() => {
+    if (!data || !Array.isArray(data)) return [];
+    return data.reverse().map((event: any) => {
+      const debut = dayjs(event.date_debut);
+      const fin = dayjs(event.date_fin);
+      const isSameDay = debut.isSame(fin, "day");
+      const prixMin = event.tarifs?.length > 0
+        ? Math.min(...event.tarifs.map((t: any) => t.prix))
+        : null;
+
+      return {
+        id: event.evenement_id,
+        title: event.titre,
+        image: event.fichiers?.[0]?.fichier_url || srcImg,
+        date: isSameDay
+          ? debut.format("D MMMM YYYY")
+          : `${debut.format("D")} → ${fin.format("D MMMM YYYY")}`,
+        price: prixMin,
+      };
+    });
+  }, [data]);
+
+  // === Filtrage sur tous les événements ===
+  const filteredEvents = useMemo(() => {
+    if (!urlQuery) return allEvents;
+    const normalize = (str: string) =>
+      str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const query = normalize(urlQuery);
+    return allEvents.filter(event => normalize(event.title).includes(query));
+  }, [allEvents, urlQuery]);
+
+  // === Pagination (4 par page) ===
+  const total = filteredEvents.length;
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+  const validPage = Math.min(Math.max(1, currentPage), totalPages || 1);
+  const start = (validPage - 1) * ITEMS_PER_PAGE;
+  const end = start + ITEMS_PER_PAGE;
+  const paginatedEvents = filteredEvents.slice(start, end);
+
+  // === Handlers ===
+  const handleSearch = () => {
+    const trimmed = inputValue.trim();
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      if (trimmed) {
+        newParams.set("q", trimmed);
+      } else {
+        newParams.delete("q");
+      }
+      newParams.set("page", "1");
+      return newParams;
+    });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const clearSearch = () => {
+    setInputValue("");
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.delete("q");
+      newParams.set("page", "1");
+      return newParams;
+    });
+  };
 
   const handlePageChange = (page: number) => {
-    setSearchParams({ page: page.toString() });
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set("page", page.toString());
+      return newParams;
+    });
+    window.scrollTo(0, 0);
   };
+
+  // === Rendu ===
+  if (isPending) {
+    return (
+      <Container size="md" my="md" py={100} pb={50}>
+        <Text ta="center" c="dimmed">Chargement des événements...</Text>
+      </Container>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <Container size="md" my="md" py={100} pb={50}>
+        <Text ta="center" c="red">Erreur lors du chargement des événements.</Text>
+      </Container>
+    );
+  }
 
   return (
     <Container size="md" my="md" py={100} pb={50}>
-      <Flex justify="space-between" align="center" mb="lg">
-        <Title c="red" size="h3">
-          Liste des évènements
-        </Title>
-        <Link to="new">
-          <Button variant="outline" color="red">
-            + Nouveau
-          </Button>
-        </Link>
+      <Flex justify="space-between" align="center" mb="lg" wrap="wrap" gap="md">
+        <Title c="red" size="h3">Liste des évènements</Title>
+
+        <Group>
+          <TextInput
+            placeholder="Rechercher (Entrée pour valider)"
+            leftSection={<IconSearch size={16} />}
+            rightSection={
+              inputValue && (
+                <ActionIcon size="sm" onClick={clearSearch} variant="subtle" color="gray">
+                  <IconX size={14} />
+                </ActionIcon>
+              )
+            }
+            value={inputValue}
+            onChange={(e) => setInputValue(e.currentTarget.value)}
+            onKeyDown={handleKeyDown}
+            style={{ minWidth: 280 }}
+            size="sm"
+          />
+          <Link to="new">
+            <Button variant="outline" color="red">+ Nouveau</Button>
+          </Link>
+        </Group>
       </Flex>
 
-      <EventsGrid events={loaderData.events} />
+      {/* Résultats */}
+      {urlQuery && (
+        <Text size="sm" c="dimmed" mb="md">
+          {total} résultat{total > 1 ? "s" : ""} pour <strong>"{urlQuery}"</strong>
+          {total === 0 && " — Aucun événement trouvé."}
+          {total > 0 && (
+            <Text component="span" ml={8} c="blue" style={{ cursor: "pointer" }} onClick={clearSearch}>
+              [Effacer]
+            </Text>
+          )}
+        </Text>
+      )}
 
+      {/* 4 événements par page */}
+      <EventsGrid events={paginatedEvents} />
+
+      {/* Pagination */}
       {totalPages > 1 && (
         <Flex justify="center" mt="xl">
           <Pagination
             total={totalPages}
-            value={currentPage}
+            value={validPage}
             onChange={handlePageChange}
             withEdges
             color="red"
@@ -105,7 +202,7 @@ export default function Evenements({ loaderData }: Route.ComponentProps) {
       )}
 
       <Text size="sm" c="dimmed" ta="center" mt="sm">
-        Page {currentPage} sur {totalPages} • {loaderData.pagination.total} événement(s)
+        Page {validPage} sur {totalPages} • {total} événement{total > 1 ? "s" : ""} trouvé{total > 1 ? "s" : ""}
       </Text>
     </Container>
   );
