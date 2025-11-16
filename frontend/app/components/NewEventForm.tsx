@@ -28,10 +28,24 @@ import { DateTimePicker } from '@mantine/dates';
 import { format } from 'date-fns';
 
 import { type_evenement, type_place } from '../constants/app';
+import { api_paths } from '~/constants/api';
+
+import { useQueryGet } from '~/hooks/useQueryGet';
 
 export function NewEventForm() {
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  let typePlaceData = useQueryGet(['type_place'], api_paths.getTypePlace);
+  let typeEventData = useQueryGet(['type_evenement'], api_paths.getTypeEvenement);
+
+  console.log("typePlaceData.data");
+  console.log(typePlaceData.data);
+  console.log("typeEventData.data");
+  console.log(typeEventData.data);
+
+  let type_evenement = typeEventData.data?.map((te:any) => ({ value: te.id.toString(), label: te.nom })) || [];
+  let type_place = typePlaceData.data?.map((tp:any) => ({ value: tp.id.toString(), label: tp.nom })) || [];
 
 
   const form = useForm({
@@ -128,7 +142,7 @@ export function NewEventForm() {
     };
 
     try {
-      const response = await fetch('http://localhost:3000/v1/evenements', {
+      const response = await fetch(api_paths.createEvenement, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

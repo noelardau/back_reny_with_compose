@@ -11,7 +11,8 @@ import {
 } from '@mantine/core';
 import { IconTrash } from '@tabler/icons-react';
 import { useState, useEffect } from 'react';
-import {type_place} from "~/constants/app";
+// import {type_place} from "~/constants/app";
+import type { evenement } from '~/interfaces/evenement';
 
 type PlaceDemandee = {
   type_place_id: string;
@@ -25,6 +26,7 @@ type FormValues = {
 };
 
 type ReservationFormProps = {
+  event: evenement;
   evenement_id: string;
   loading?: boolean;
   disabled?: boolean;
@@ -39,12 +41,17 @@ type ReservationFormProps = {
 
 
 export function ReservationForm({
-  evenement_id,
+  event,
   onSubmit,
   loading,
   disabled,
 }: ReservationFormProps) {
   const [entries, setEntries] = useState<number[]>([0]); // indices des lignes
+
+  const type_place = event.tarifs_et_places.map((tp) => ({
+    value: tp.type_place_id,
+    label: `${tp.type_place_nom}`,
+  }));
 
   const form = useForm<FormValues>({
     initialValues: {
@@ -114,7 +121,7 @@ export function ReservationForm({
     const data = {
       email: values.email,
       reference_paiement: values.reference_paiement.trim(),
-      evenement_id,
+      evenement_id: event.evenement_id,
       places_demandees: validPlaces,
     };
 
@@ -128,6 +135,7 @@ export function ReservationForm({
 
   return (
     <Box component="form" onSubmit={form.onSubmit(handleSubmit)} maw={500}>
+      
       <Stack gap="md">
         <TextInput
           label="Email"

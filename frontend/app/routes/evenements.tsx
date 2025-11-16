@@ -6,7 +6,7 @@ import event1 from "../assets/Foaran_ny_fetin_ny_reny.jpg";
 import type { Route } from "./+types/evenements";
 import { Id_event_added } from "~/constants/app";
 
-const ITEMS_PER_PAGE = 3;
+const ITEMS_PER_PAGE = 4;
 
 export async function loader({ request }: Route.LoaderArgs) {
   routeProtection();

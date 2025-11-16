@@ -1,19 +1,18 @@
-import { IconArrowLeft, IconEdit, IconList, IconTagPlus, IconMapPin, IconCalendar, IconClock, IconTicket } from '@tabler/icons-react';
+import { IconArrowLeft, IconEdit, IconList, IconTagPlus, IconMapPin, IconCalendar, IconClock, IconTicket, IconCheck, IconX } from '@tabler/icons-react';
 import { Modal, Badge, Button, Card, Group, Image, Text, SimpleGrid, AspectRatio, Stack, Divider } from '@mantine/core';
 import { ReservationForm } from './ReservationFrom';
 import classes from '../styles/SingleEventCard.module.css';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
-import { API_BASE_URL } from '~/constants/api';
+import { api_paths } from '~/constants/api';
 import type { evenement } from '~/interfaces/evenement';
 import type { newReservation } from '~/interfaces/reservation';
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import event1 from "../assets/Foaran_ny_fetin_ny_reny.jpg";
-import {  notifications } from '@mantine/notifications';
+import { notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
-import { IconCheck, IconX } from '@tabler/icons-react';
 
 dayjs.locale('fr');
 
@@ -22,7 +21,7 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
 
   const mutation = useMutation({
     mutationFn: (newResa: newReservation) =>
-      fetch(`${API_BASE_URL}/reservations`, {
+      fetch(`${api_paths.createReservation}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newResa),
@@ -30,9 +29,8 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
         if (!res.ok) throw new Error('Échec de la réservation');
         return res.json();
       }),
-
     onSuccess: () => {
-      setOpened(false); // Fermer le modal
+      setOpened(false);
       notifications.show({
         title: 'Réservation réussie !',
         message: 'Votre place a été réservée avec succès.',
@@ -41,7 +39,6 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
         autoClose: 5000,
       });
     },
-
     onError: (error: any) => {
       notifications.show({
         title: 'Erreur',
@@ -64,7 +61,6 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
 
   return (
     <>
-   
       <Modal
         opened={opened}
         onClose={() => !mutation.isPending && setOpened(false)}
@@ -74,6 +70,7 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
       >
         <ReservationForm
           evenement_id={event.evenement_id}
+          event={event}
           onSubmit={saveResa}
           loading={mutation.isPending}
         />
@@ -144,7 +141,7 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
 
         <Divider my="md" />
 
-        {/* === STATISTIQUES === */}
+        {/* === STATISTIQUES GLOBALES === */}
         <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs" mt="md">
           <div>
             <Text size="xs" c="dimmed">Places totales</Text>
@@ -164,6 +161,65 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
               {event.statistiques_globales.total_places > 0
                 ? `${Math.round((event.statistiques_globales.places_vendues / event.statistiques_globales.total_places) * 100)}%`
                 : '0%'}
+            </Text>
+          </div>
+        </SimpleGrid>
+
+        {/* === NOUVELLES INFOS : Prix, Jours, Statut === */}
+        <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs" mt="md">
+          <div>
+            <Text size="xs" c="dimmed">Prix min</Text>
+            <Text fw={600} color="teal">
+              {event.informations_complementaires.prix_minimum?.toLocaleString('fr-FR')} Ar
+            </Text>
+          </div>
+          <div>
+            <Text size="xs" c="dimmed">Prix max</Text>
+            <Text fw={600} color="teal">
+              {event.informations_complementaires.prix_maximum?.toLocaleString('fr-FR')} Ar
+            </Text>
+          </div>
+          <div>
+            <Text size="xs" c="dimmed">Jours restants</Text>
+            <Text fw={600} color="blue">
+              {event.informations_complementaires.jours_restants}
+            </Text>
+          </div>
+          <div>
+            <Text size="xs" c="dimmed">Statut</Text>
+            <Text
+              fw={600}
+              color={
+                event.informations_complementaires.est_passe
+                  ? 'red'
+                  : event.informations_complementaires.est_actuel
+                  ? 'orange'
+                  : 'green'
+              }
+            >
+              {event.informations_complementaires.statut === 'a_venir'
+                ? 'À venir'
+                : event.informations_complementaires.statut === 'en_cours'
+                ? 'En cours'
+                : event.informations_complementaires.statut === 'termine'
+                ? 'Terminé'
+                : 'Inconnu'}
+            </Text>
+          </div>
+        </SimpleGrid>
+
+        {/* === INFOS SUPPLÉMENTAIRES === */}
+        <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs" mt="md">
+          <div>
+            <Text size="xs" c="dimmed">Réservées</Text>
+            <Text fw={600} color="yellow">
+              {event.statistiques_globales.places_reservees}
+            </Text>
+          </div>
+          <div>
+            <Text size="xs" c="dimmed">Types de places</Text>
+            <Text fw={600}>
+              {event.informations_complementaires.nombre_types_places}
             </Text>
           </div>
         </SimpleGrid>

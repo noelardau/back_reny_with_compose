@@ -13,7 +13,7 @@ export default [
     ...prefix("resa",[
         route(":eventId", "routes/listeResa.tsx"),
             layout("layouts/AppLayout.tsx", [
-        route(":eventId/:idResa", "routes/resa.tsx"),
+        route("/one/:idResa", "routes/resa.tsx"),
 
        ]) 
     ])
