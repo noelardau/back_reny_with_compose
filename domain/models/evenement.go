@@ -1,7 +1,6 @@
 package models
 
 import (
-    "time"
     "github.com/google/uuid"
 )
 
@@ -10,8 +9,8 @@ type EvenementCompletGet struct {
     EvenementID  uuid.UUID     `json:"evenement_id"`
     Titre        string        `json:"titre"`
     Description  string        `json:"description"`
-    DateDebut    time.Time     `json:"date_debut"`
-    DateFin      time.Time     `json:"date_fin"`
+    DateDebut    CustomTime    `json:"date_debut"`
+    DateFin      CustomTime     `json:"date_fin"`
     TypeEvenement TypeEvenement `json:"type_evenement"`
     Lieu         Lieu          `json:"lieu"`
     Tarifs       []TarifComplet `json:"tarifs"`
