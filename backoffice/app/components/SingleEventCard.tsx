@@ -13,6 +13,7 @@ import 'dayjs/locale/fr';
 import event1 from "../assets/Foaran_ny_fetin_ny_reny.jpg";
 import { notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
+import {base64ToDataUrl} from "~/utils/base64"; 
 
 dayjs.locale('fr');
 
@@ -53,8 +54,11 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
   const saveResa = (newResa: newReservation) => {
     mutation.mutate(newResa);
   };
+    
+  const binaryData = event.fichiers?.[0]?.donnees_binaire;
+  const imageFromBase64 = base64ToDataUrl(binaryData); 
 
-  const eventImage = event.fichiers?.[0]?.fichier_url || event1;
+  const eventImage = imageFromBase64 || event.fichiers?.[0]?.fichier_url || event1;
   const formatDate = (date: string) => dayjs(date).format('D MMMM YYYY');
   const formatTime = (date: string) => dayjs(date).format('HH:mm');
   const isSameDay = dayjs(event.date_debut).isSame(event.date_fin, 'day');
@@ -80,7 +84,7 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
         {/* === EN-TÊTE === */}
         <Card.Section className={classes.section} mt="md">
           <Group justify="apart" align="center">
-            <Link to={forUser ? '/event' : 'http://localhost:3002'}>
+            <Link to={forUser ? '/event' : 'https://renyevents.vercel.app/'}>
               <IconArrowLeft size={20} color="red" style={{ cursor: 'pointer' }} />
             </Link>
             <Text fz="xl" fw={700} style={{ flex: 1, textAlign: 'center' }}>
@@ -234,7 +238,7 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
               loading={mutation.isPending}
               fullWidth
             >
-              Réserver
+              Enregistrer une réservation
             </Button>
             <Button
               leftSection={<IconList size={18} />}
@@ -243,9 +247,10 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
               to={`/resa/${event.evenement_id}`}
               fullWidth
             >
-              <Text hiddenFrom="sm">Liste</Text>
+              <Text visibleFrom="sm">Liste réservation</Text>
+              {/* <Text hiddenFrom="sm">Liste</Text> */}
             </Button>
-          
+            
           </SimpleGrid>
         ) : (
           <Button
@@ -256,7 +261,7 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
             onClick={() => setOpened(true)}
             loading={mutation.isPending}
           >
-            Réserver une place
+            Réserver 
           </Button>
         )}
       </Card>

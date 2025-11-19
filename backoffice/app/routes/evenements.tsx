@@ -50,7 +50,7 @@ export default function Evenements() {
   // === Tous les événements transformés ===
   const allEvents = useMemo(() => {
     if (!data || !Array.isArray(data)) return [];
-    return data.reverse().map((event: any) => {
+    return data.map((event: any) => {
       const debut = dayjs(event.date_debut);
       const fin = dayjs(event.date_fin);
       const isSameDay = debut.isSame(fin, "day");

@@ -27,7 +27,6 @@ import { notifications } from '@mantine/notifications'; // ← Ajouté
 import { DateTimePicker } from '@mantine/dates';
 import { format } from 'date-fns';
 
-import { type_evenement, type_place } from '../constants/app';
 import { api_paths } from '~/constants/api';
 
 import { useQueryGet } from '~/hooks/useQueryGet';
@@ -39,10 +38,6 @@ export function NewEventForm() {
   let typePlaceData = useQueryGet(['type_place'], api_paths.getTypePlace);
   let typeEventData = useQueryGet(['type_evenement'], api_paths.getTypeEvenement);
 
-  console.log("typePlaceData.data");
-  console.log(typePlaceData.data);
-  console.log("typeEventData.data");
-  console.log(typeEventData.data);
 
   let type_evenement = typeEventData.data?.map((te:any) => ({ value: te.id.toString(), label: te.nom })) || [];
   let type_place = typePlaceData.data?.map((tp:any) => ({ value: tp.id.toString(), label: tp.nom })) || [];
@@ -150,7 +145,7 @@ export function NewEventForm() {
 
       if (response.ok) {
         const result = await response.json();
-        console.log(payload)
+      
 
         notifications.show({
           title: 'Événement créé !',

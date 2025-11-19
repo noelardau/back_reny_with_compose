@@ -69,6 +69,7 @@ interface Fichier {
   taille_bytes: number;
   type_fichier: 'affiche' | 'image' | 'document' | string;
   date_upload: ISODateString;
+  donnees_binaire: string; // Base64
 }
 
 // Statistiques globales de l'événement

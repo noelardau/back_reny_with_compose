@@ -2,6 +2,7 @@ import { type RouteConfig, index, prefix, route, layout } from "@react-router/de
 
 export default [
     index("routes/home.tsx"),
+
     route("/login","routes/login.tsx"),
     ...prefix("event/",[
         
@@ -12,10 +13,9 @@ export default [
     ]),
     ...prefix("resa",[
         route(":eventId", "routes/listeResa.tsx"),
-            layout("layouts/AppLayout.tsx", [
+    
         route("/one/:idResa", "routes/resa.tsx"),
 
-       ]) 
     ])
 
 ] satisfies RouteConfig;

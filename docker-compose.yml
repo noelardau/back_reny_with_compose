@@ -100,7 +100,7 @@ services:
       - "3001:3000"
     environment:
       - NODE_ENV=production
-    profiles: ["front"]
+    # profiles: ["front"]
 
   vitrine:
       build:
@@ -119,7 +119,7 @@ services:
         - "3002:4173"
       environment:
         - NODE_ENV=production       
-      profiles: ["front"]
+      # profiles: ["front"]
 
 volumes:
   postgres-data:
