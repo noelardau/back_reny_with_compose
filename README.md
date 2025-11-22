@@ -1,10 +1,13 @@
 
-#  Lancer tout
-## docker compose --profile front up --build 
+#  Lancer tout (au debut)
+## docker compose --profile init_db up --build 
 
-# relancer après changement de code
-## docker compose --profile front down -v
-## docker compose --profile front up --build
+# tout arreter 
+## docker compose --profile init_db down -v
+
+
+# relancer après le premier demarrage
+## docker compose up
 
 
 

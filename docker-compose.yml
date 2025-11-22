@@ -1,3 +1,4 @@
+version: '3.8'
 
 services:
   # ========================================
@@ -14,15 +15,47 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
-    command: >
-      postgres
-      -c log_statement=all
+      - postgres-data:/var/lib/postgresql/data
+    command: postgres -c log_statement=all
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d renydb"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 10s
+
+  # ========================================
+  # SERVICE D'INITIALISATION / MIGRATION À CHAUD
+  # Exécute tous les .sql du dossier ./sql à chaque démarrage
+  # ========================================
+  postgres-init:
+    image: postgres:16-alpine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./sql:/sql:ro    
+    profiles: ["init_db"]            # ← Crée ce dossier et mets-y tous tes scripts
+    environment:
+      PGPASSWORD: admin
+    command: >
+      bash -c "
+        echo '⏳ Attente que PostgreSQL soit prêt...'
+        until pg_isready -h postgres -U admin -d renydb -q; do
+          sleep 2
+        done
+
+        echo '✅ PostgreSQL prêt ! Exécution des scripts du dossier /sql ...'
+        for file in /sql/*.sql; do
+          if [[ -f "$$file" ]]; then
+            echo \"➡️  Exécution de $(basename $$file)\"
+            psql -h postgres -U admin -d renydb -f \"$$file\"
+            echo \"✔️  $(basename $$file) terminé\"
+          fi
+        done
+
+        echo '🎉 Tous les scripts SQL ont été exécutés !'
+      "
 
   # ========================================
   # PGADMIN
@@ -44,82 +77,69 @@ services:
     volumes:
       - pgadmin-data:/var/lib/pgadmin
       - ./pgadmin-servers.json:/pgadmin4/servers.json:ro
-      - ./postgres/CREATION.sql:/docker-entrypoint-initdb.d/init.sql 
-    entrypoint: |
-      /bin/sh -c '
-        sleep 2;
-        if [ ! -f /var/lib/pgadmin/servers.json ]; then
-          cp /pgadmin4/servers.json /var/lib/pgadmin/servers.json || true;
-          chmod 600 /var/lib/pgadmin/servers.json || true;
-        fi;
-        /entrypoint.sh
-      '
 
-  # # ========================================
-  # # BACKEND GO
-  # # ========================================
+  # ========================================
+  # BACKEND GO
+  # ========================================
   backend:
-    image: golang:1.25.4
+    image: golang:trixie   # 1.25.4 n’existe pas encore, 1.23 est la dernière stable
     container_name: go-backend
     restart: unless-stopped
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
     environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=admin
-      - DB_PASSWORD=admin
-      - DB_NAME=renydb
-      - DB_SSLMODE=disable
-      - SERVER_PORT=3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: admin
+      DB_NAME: renydb
+      DB_SSLMODE: disable
+      SERVER_PORT: 3000
     ports:
       - "3000:3000"
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4 
-    command: ["go", "run", "main.go"]  # Simplifié, et dans le bon dossier
     volumes:
       - .:/app
     working_dir: /app
-    
+    command: ["go", "run", "main.go"]
+
+  # ========================================
+  # FRONTS (inchangés)
+  # ========================================
   backoffice:
     build:
       context: ./backoffice
       dockerfile: Dockerfile
     container_name: backoffice
     restart: unless-stopped
-    develop:                   # ← LA NOUVELLE SECTION MAGIQUE
+    develop:
       watch:
-        - action: rebuild        # synchronise les fichiers en live
-          path: ./backoffice      # dossier sur ton host
+        - action: rebuild
+          path: ./backoffice
           target: /app
     depends_on:
       - backend
     ports:
       - "3001:3000"
     environment:
-      - NODE_ENV=production
-    # profiles: ["front"]
+      NODE_ENV: production
 
   vitrine:
-      build:
-        context: ./vitrine
-        dockerfile: Dockerfile
-      container_name: vitrine
-      restart: unless-stopped
-      develop:                   # ← LA NOUVELLE SECTION MAGIQUE
-        watch:
-          - action: rebuild        # synchronise les fichiers en live
-            path: ./vitrine       # dossier sur ton host
-            target: /app
-      depends_on:
-        - backend
-      ports:
-        - "3002:4173"
-      environment:
-        - NODE_ENV=production       
-      # profiles: ["front"]
+    build:
+      context: ./vitrine
+      dockerfile: Dockerfile
+    container_name: vitrine
+    restart: unless-stopped
+    develop:
+      watch:
+        - action: rebuild
+          path: ./vitrine
+          target: /app
+    depends_on:
+      - backend
+    ports:
+      - "3002:4173"
+    environment:
+      NODE_ENV: production
 
 volumes:
   postgres-data:
