@@ -55,10 +55,10 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
     mutation.mutate(newResa);
   };
     
-  const binaryData = event.fichiers?.[0]?.donnees_binaire;
+  const binaryData = event.fichiers?.[0]?.donnees_bytea;
   const imageFromBase64 = base64ToDataUrl(binaryData); 
 
-  const eventImage = imageFromBase64 || event.fichiers?.[0]?.fichier_url || event1;
+  const eventImage = imageFromBase64 || event1;
   const formatDate = (date: string) => dayjs(date).format('D MMMM YYYY');
   const formatTime = (date: string) => dayjs(date).format('HH:mm');
   const isSameDay = dayjs(event.date_debut).isSame(event.date_fin, 'day');
