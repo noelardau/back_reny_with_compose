@@ -1556,3 +1556,7 @@ BEGIN
     RETURN COALESCE(result, '{}'::jsonb);
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+

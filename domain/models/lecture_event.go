@@ -2,6 +2,7 @@ package models
 
 
 
+
 type EvenementComplet struct {
 	EvenementID              string                 `json:"evenement_id"`
 	Titre                    string                 `json:"titre"`
@@ -12,9 +13,74 @@ type EvenementComplet struct {
 	Lieu                     Lieu                   `json:"lieu"`
 	TarifsEtPlaces           []TarifAvecPlaces      `json:"tarifs_et_places"`
 	StatistiquesGlobales     StatistiquesGlobales   `json:"statistiques_globales"`
-	Fichiers                 []FichierMetadata      `json:"fichiers"`
+	Fichiers                 []FichierAvecDonnees   `json:"fichiers"` // Changé ici
 	InformationsComplementaires InformationsComplementaires `json:"informations_complementaires"`
 }
+
+// Ancienne structure FichierMetadata (à conserver si utilisée ailleurs)
+type FichierMetadata struct {
+	FichierID   string  `json:"fichier_id"`
+	NomFichier  string  `json:"nom_fichier"`
+	TypeMime    string  `json:"type_mime"`
+	TailleBytes int64   `json:"taille_bytes"`
+	TypeFichier string  `json:"type_fichier"`
+	DateUpload  string  `json:"date_upload"`
+}
+
+// NOUVELLE structure avec données binaires
+type FichierAvecDonnees struct {
+	FichierID              string  `json:"fichier_id"`
+	NomFichier             string  `json:"nom_fichier"`
+	TypeMime               string  `json:"type_mime"`
+	TailleBytes            int64   `json:"taille_bytes"`
+	TypeFichier            string  `json:"type_fichier"`
+	DateUpload             string  `json:"date_upload"`
+	DonneesBinaireBase64   *string `json:"donnees_binaire_base64,omitempty"` // Nouveau champ
+	URLData                *string `json:"url_data,omitempty"`               // Nouveau champ
+}
+
+// Mise à jour de InformationsComplementaires pour ajouter les infos fichiers
+type InformationsComplementaires struct {
+	DureeEvenementMinutes int     `json:"duree_evenement_minutes"`
+	JoursRestants         int     `json:"jours_restants"`
+	EstPasse              bool    `json:"est_passe"`
+	EstActuel             bool    `json:"est_actuel"`
+	EstFutur              bool    `json:"est_futur"`
+	PrixMinimum           float64 `json:"prix_minimum"`
+	PrixMaximum           float64 `json:"prix_maximum"`
+	NombreTypesPlaces     int     `json:"nombre_types_places"`
+	Statut                string  `json:"statut"`
+	NombreFichiers        int     `json:"nombre_fichiers"`        // Nouveau champ
+	AAffiche              bool    `json:"a_affiche"`              // Nouveau champ
+	APhotos               bool    `json:"a_photos"`               // Nouveau champ
+}
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////
+
+// type EvenementComplet struct {
+// 	EvenementID              string                 `json:"evenement_id"`
+// 	Titre                    string                 `json:"titre"`
+// 	DescriptionEvenement     *string                `json:"description_evenement"`
+// 	DateDebut                string                 `json:"date_debut"`
+// 	DateFin                  string                 `json:"date_fin"`
+// 	TypeEvenement            TypeEvenement          `json:"type_evenement"`
+// 	Lieu                     Lieu                   `json:"lieu"`
+// 	TarifsEtPlaces           []TarifAvecPlaces      `json:"tarifs_et_places"`
+// 	StatistiquesGlobales     StatistiquesGlobales   `json:"statistiques_globales"`
+// 	Fichiers                 []FichierMetadata      `json:"fichiers"`
+// 	InformationsComplementaires InformationsComplementaires `json:"informations_complementaires"`
+// }
 
 // Structures pour le décodage JSON
 type TypeEvenement struct {
@@ -74,23 +140,23 @@ type StatistiquesGlobales struct {
 	PourcentageRemplissage float64 `json:"pourcentage_remplissage"`
 }
 
-type FichierMetadata struct {
-	FichierID   string  `json:"fichier_id"`
-	NomFichier  string  `json:"nom_fichier"`
-	TypeMime    string  `json:"type_mime"`
-	TailleBytes int64   `json:"taille_bytes"`
-	TypeFichier string  `json:"type_fichier"`
-	DateUpload  string  `json:"date_upload"`
-}
+// type FichierMetadata struct {
+// 	FichierID   string  `json:"fichier_id"`
+// 	NomFichier  string  `json:"nom_fichier"`
+// 	TypeMime    string  `json:"type_mime"`
+// 	TailleBytes int64   `json:"taille_bytes"`
+// 	TypeFichier string  `json:"type_fichier"`
+// 	DateUpload  string  `json:"date_upload"`
+// }
 
-type InformationsComplementaires struct {
-	DureeEvenementMinutes int     `json:"duree_evenement_minutes"`
-	JoursRestants         int     `json:"jours_restants"`
-	EstPasse              bool    `json:"est_passe"`
-	EstActuel             bool    `json:"est_actuel"`
-	EstFutur              bool    `json:"est_futur"`
-	PrixMinimum           float64 `json:"prix_minimum"`
-	PrixMaximum           float64 `json:"prix_maximum"`
-	NombreTypesPlaces     int     `json:"nombre_types_places"`
-	Statut                string  `json:"statut"`
-}
+// type InformationsComplementaires struct {
+// 	DureeEvenementMinutes int     `json:"duree_evenement_minutes"`
+// 	JoursRestants         int     `json:"jours_restants"`
+// 	EstPasse              bool    `json:"est_passe"`
+// 	EstActuel             bool    `json:"est_actuel"`
+// 	EstFutur              bool    `json:"est_futur"`
+// 	PrixMinimum           float64 `json:"prix_minimum"`
+// 	PrixMaximum           float64 `json:"prix_maximum"`
+// 	NombreTypesPlaces     int     `json:"nombre_types_places"`
+// 	Statut                string  `json:"statut"`
+// }
