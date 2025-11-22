@@ -52,13 +52,15 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
   });
 
   const saveResa = (newResa: newReservation) => {
+    console.log(newResa)
     mutation.mutate(newResa);
   };
     
-  const binaryData = event.fichiers?.[0]?.donnees_bytea;
+  const binaryData = event.fichiers?.[0]?.donnees_binaire_base64;
   const imageFromBase64 = base64ToDataUrl(binaryData); 
+  console.log("data bitea ",event.fichiers)
 
-  const eventImage = imageFromBase64 || event1;
+  const eventImage = imageFromBase64 || event.fichiers?.[0]?.fichier_url || event1;
   const formatDate = (date: string) => dayjs(date).format('D MMMM YYYY');
   const formatTime = (date: string) => dayjs(date).format('HH:mm');
   const isSameDay = dayjs(event.date_debut).isSame(event.date_fin, 'day');
@@ -84,7 +86,7 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
         {/* === EN-TÊTE === */}
         <Card.Section className={classes.section} mt="md">
           <Group justify="apart" align="center">
-            <Link to={forUser ? '/event' : 'http://localhost:3002'} >
+            <Link to={forUser ? '/event' : 'https://renyevents.vercel.app/'}>
               <IconArrowLeft size={20} color="red" style={{ cursor: 'pointer' }} />
             </Link>
             <Text fz="xl" fw={700} style={{ flex: 1, textAlign: 'center' }}>
