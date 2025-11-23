@@ -137,7 +137,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "3002:4173"
+      - "3002:3000"
     environment:
       NODE_ENV: production
 
