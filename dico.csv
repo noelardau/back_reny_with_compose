@@ -1,0 +1,39 @@
+nom_attribut,description,taille,type,commentaire
+adresse,Adresse complète du lieu,255,AN,Adresse postale complète
+ancien_etat,Ancien état de la place,20,AN,Code de l'état précédent
+avantages,Avantages du type de place,255,AN,Liste des avantages
+capacite,Capacité totale du lieu,5,N,Nombre maximum de personnes
+code_etat_place,Code de l'état de la place,20,AN,Identifiant court de l'état
+date_changement,Date et heure du changement,19,AN,Format timestamp
+date_debut,Date et heure de début,19,AN,Format timestamp
+date_fin,Date et heure de fin,19,AN,Format timestamp
+date_reservation,Date et heure de réservation,19,AN,Format timestamp
+date_upload,Date de téléchargement,19,AN,Format timestamp
+description,Description détaillée,255,AN,Explication complète
+donnees_binaire,Données binaires du fichier,10485760,AN,Stockage binaire (max 10MB)
+email,Adresse email du réservant,255,AN,Email de contact
+etat,État de la réservation,20,AN,Statut de la réservation
+etat_code,Code état de la réservation,20,AN,Code du statut
+id_audit_place,Identifiant unique de l'audit,36,AN,UUID
+id_evenement,Identifiant unique de l'événement,36,AN,UUID
+id_fichier_evenement,Identifiant unique du fichier,36,AN,UUID
+id_lieu,Identifiant unique du lieu,36,AN,UUID
+id_place,Identifiant unique de la place,36,AN,UUID
+id_reservation,Identifiant unique de la réservation,36,AN,UUID
+id_reservation_place,Identifiant unique réservation-place,36,AN,UUID
+id_tarif,Identifiant unique du tarif,36,AN,UUID
+id_type_evenement,Identifiant unique type événement,36,AN,UUID
+id_type_place,Identifiant unique type de place,36,AN,UUID
+nom,Nom,150,AN,Nom de l'élément
+nom_fichier,Nom du fichier,255,AN,Nom original du fichier
+nombre_places,Nombre de places,5,N,Quantité de places
+nouvel_etat,Nouvel état de la place,20,AN,Code du nouvel état
+numero,Numéro de la place,100,AN,Identifiant de la place
+prix,Prix unitaire,10,N,Valeur numérique avec 2 décimales
+reference_paiement,Référence du paiement,100,AN,Identifiant de transaction
+taille_bytes,Taille du fichier en octets,10,N,Taille en bytes
+titre,Titre de l'événement,150,AN,Titre principal
+type_fichier,Type du fichier,50,AN,photo/affiche/document
+type_mime,Type MIME du fichier,100,AN,Type de contenu
+utilisateur,Utilisateur effectuant le changement,100,AN,Identifiant utilisateur
+ville,Ville du lieu,100,A,Nom de la ville

@@ -26,6 +26,7 @@ func (repo EvenementRepository) Reserver(req models.ReservationRequest) (string,
         req.Email,
         req.EvenementID,
         placesJSON,
+        req.ReferencePaiement,
     ).Scan(&reservationID)
     
     if err != nil {
