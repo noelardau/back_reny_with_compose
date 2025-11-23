@@ -9,6 +9,7 @@ import (
 type ReservationRequest struct {
     Email           string                   `json:"email"`
     EvenementID     string                   `json:"evenement_id"`
+    ReferencePaiement string                  `json:"reference_paiement"`
     PlacesDemandees []TypePlaceDemande       `json:"places_demandees"`
 }
 
