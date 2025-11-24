@@ -3,7 +3,7 @@
 ## docker compose --profile init_db up --build 
 
 # tout arreter 
-## docker compose --profile init_db down -v
+## docker compose down 
 
 
 # relancer après le premier demarrage
