@@ -116,7 +116,7 @@ export default function ReservationCard({
             </Badge>
 
             {/* Bouton "Marquer comme utilisé" */}
-            {isPaid && !isUsed && onMarkAsUsed && forUser && (
+            {/* {isPaid && !isUsed && onMarkAsUsed && forUser && (
               <Button
                 leftSection={<IconChecks size={18} />}
                 color="blue"
@@ -132,7 +132,7 @@ export default function ReservationCard({
               <Badge color="blue" variant="filled">
                 Billet scanné
               </Badge>
-            )}
+            )} */}
           </Group>
         </Group>
       </Card.Section>
