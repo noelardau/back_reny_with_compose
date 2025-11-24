@@ -42,7 +42,7 @@ interface ReservationCardProps {
 const statusConfig = {
   en_attente: { color: 'yellow', label: 'En attente', icon: IconClock },
   payee: { color: 'green', label: 'Payée', icon: IconCheck },
-  utilisee: { color: 'blue', label: 'Utilisée', icon: IconChecks },
+  checked: { color: 'blue', label: 'Utilisée', icon: IconChecks },
 } as const;
 
 const formatPrice = (amount: number) =>
@@ -79,7 +79,7 @@ export default function ReservationCard({
   };
   const StatusIcon = statusInfo.icon;
   const isPaid = etat_code === 'payee';
-  const isUsed = etat_code === 'utilisee';
+  const isUsed = etat_code === 'checked';
 
   return (
     <Card withBorder radius="md" shadow="sm" p="lg" className="max-w-4xl mx-auto">
@@ -116,7 +116,7 @@ export default function ReservationCard({
             </Badge>
 
             {/* Bouton "Marquer comme utilisé" */}
-            {/* {isPaid && !isUsed && onMarkAsUsed && forUser && (
+            {isPaid && !isUsed && onMarkAsUsed && forUser && (
               <Button
                 leftSection={<IconChecks size={18} />}
                 color="blue"
@@ -132,7 +132,7 @@ export default function ReservationCard({
               <Badge color="blue" variant="filled">
                 Billet scanné
               </Badge>
-            )} */}
+            )}
           </Group>
         </Group>
       </Card.Section>
