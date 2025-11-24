@@ -27,4 +27,6 @@ var (
     GET_EVENEMENT_BY_ID string = `SELECT obtenir_evenement_par_id($1) as evenement_data`
 
     RESERVER_QUERY string = "SELECT reserver_places($1, $2, $3, $4)"
+
+    MARK_RESERVATION = "UPDATE reservation SET etat = '$1' WHERE id='$2'"
 )

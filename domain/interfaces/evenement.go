@@ -35,6 +35,7 @@ type EvenementService interface {
 	GetReservationByID(reservationID uuid.UUID) (*models.ReservationCompleteT, error)
 	GetTypePlaces()([]models.TypePlaceGet, error)
 	GetAllTypeEvenements() ([]models.TypeEvenementGet, error)
+	MarkReservation(id_reservation uuid.UUID) (error)
 }
 
 
@@ -48,9 +49,7 @@ type EvenementRepository interface {
 	GetReservationByID(reservationID uuid.UUID) (*models.ReservationCompleteT, error)
 	GetTypePlaces()([]models.TypePlaceGet, error)
 	GetAllTypeEvenements() ([]models.TypeEvenementGet, error)
+	MarkReservation(id_reservation uuid.UUID) (uuid.UUID, error)
 }
 
 
-type Utilisateur struct {
-	
-}
