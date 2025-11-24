@@ -82,7 +82,7 @@ services:
   # BACKEND GO
   # ========================================
   backend:
-    image: golang:trixie   # 1.25.4 n’existe pas encore, 1.23 est la dernière stable
+    image: golang:trixie  
     container_name: go-backend
     restart: unless-stopped
     depends_on:
@@ -103,7 +103,7 @@ services:
     command: ["go", "run", "main.go"]
 
   # ========================================
-  # FRONTS (inchangés)
+  # FRONTS 
   # ========================================
   backoffice:
     build:

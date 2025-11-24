@@ -8,6 +8,11 @@ import {
   ThemeIcon,
   Grid,
   Box,
+  Button,
+  ActionIcon,
+  CopyButton,
+  Tooltip,
+  rem,
 } from '@mantine/core';
 import {
   IconMail,
@@ -20,20 +25,24 @@ import {
   IconCalendar,
   IconMapPin,
   IconCategory,
+  IconCopy,
+  IconQrcode,
+  IconChecks,
 } from '@tabler/icons-react';
 import { Link } from 'react-router';
+import { path_to_vitrine } from '~/constants/app';
 
-// === Props : tout vient du JSON brut ===
 interface ReservationCardProps {
-  reservation: any; // ton JSON complet
+  reservation: any;
   forUser?: boolean;
   idEvent?: string;
+  onMarkAsUsed?: (reservationId: string) => void; // nouvelle callback
 }
 
-// === Config ===
 const statusConfig = {
   en_attente: { color: 'yellow', label: 'En attente', icon: IconClock },
   payee: { color: 'green', label: 'Payée', icon: IconCheck },
+  utilisee: { color: 'blue', label: 'Utilisée', icon: IconChecks },
 } as const;
 
 const formatPrice = (amount: number) =>
@@ -49,9 +58,9 @@ const formatDate = (date: string) =>
 
 export default function ReservationCard({
   reservation,
-  forUser
+  forUser = false,
+  onMarkAsUsed,
 }: ReservationCardProps) {
-  // === Extraction directe des données ===
   const {
     reservation_id,
     email,
@@ -60,6 +69,7 @@ export default function ReservationCard({
     total,
     places,
     evenement,
+    reference_paiement,
   } = reservation;
 
   const statusInfo = statusConfig[etat_code as keyof typeof statusConfig] || {
@@ -68,10 +78,12 @@ export default function ReservationCard({
     icon: IconInfoCircle,
   };
   const StatusIcon = statusInfo.icon;
+  const isPaid = etat_code === 'payee';
+  const isUsed = etat_code === 'utilisee';
 
   return (
     <Card withBorder radius="md" shadow="sm" p="lg" className="max-w-4xl mx-auto">
-      {/* === HEADER === */}
+      {/* HEADER */}
       <Card.Section withBorder inheritPadding py="xs">
         <Group justify="apart">
           <Group gap="xs">
@@ -79,7 +91,7 @@ export default function ReservationCard({
               to={
                 forUser
                   ? `/resa/${evenement.id}`
-                  : 'https://renyevents.vercel.app/'
+                  : path_to_vitrine
               }
             >
               <IconArrowLeft size={20} color="red" style={{ cursor: 'pointer' }} />
@@ -91,19 +103,42 @@ export default function ReservationCard({
               Réservation #{reservation_id.slice(0, 8)}
             </Text>
           </Group>
-          <Badge
-            color={statusInfo.color}
-            variant="light"
-            leftSection={<StatusIcon size={14} />}
-            size="lg"
-          >
-            {statusInfo.label}
-          </Badge>
+
+          <Group gap="md">
+            {/* Statut principal */}
+            <Badge
+              color={statusInfo.color}
+              variant="light"
+              leftSection={<StatusIcon size={14} />}
+              size="lg"
+            >
+              {statusInfo.label}
+            </Badge>
+
+            {/* Bouton "Marquer comme utilisé" */}
+            {isPaid && !isUsed && onMarkAsUsed && forUser && (
+              <Button
+                leftSection={<IconChecks size={18} />}
+                color="blue"
+                variant="light"
+                size="sm"
+                onClick={() => onMarkAsUsed(reservation_id)}
+              >
+                Marquer comme utilisé
+              </Button>
+            )}
+
+            {isUsed && (
+              <Badge color="blue" variant="filled">
+                Billet scanné
+              </Badge>
+            )}
+          </Group>
         </Group>
       </Card.Section>
 
       <Stack gap="md" mt="md">
-        {/* === ÉVÉNEMENT === */}
+        {/* ÉVÉNEMENT */}
         <Box>
           <Text size="lg" fw={700} c="blue">
             {evenement.titre}
@@ -123,19 +158,40 @@ export default function ReservationCard({
               </Text>
             </Group>
           )}
-          {evenement.type_evenement?.type_evenement_nom && (
-            <Group gap="xs" mt={2}>
-              <IconCategory size={16} color="gray" />
-              <Text size="sm" c="dimmed">
-                {evenement.type_evenement.type_evenement_nom}
-              </Text>
-            </Group>
-          )}
         </Box>
 
         <Divider />
 
-        {/* === INFOS CLIENT === */}
+        {/* RÉFÉRENCE DE PAIEMENT + COPY */}
+        {reference_paiement && (
+          <Group justify="apart" align="center" wrap="nowrap">
+            <Group gap="xs">
+              <ThemeIcon variant="light" color="violet" size="md">
+                <IconQrcode size={18} />
+              </ThemeIcon>
+              <Box>
+                <Text size="sm" c="dimmed">Référence paiement</Text>
+                <Text fw={600} size="sm" >
+                  {reference_paiement}
+                </Text>
+              </Box>
+            </Group>
+
+            <CopyButton value={reference_paiement}>
+              {({ copied, copy }) => (
+                <Tooltip label={copied ? "Copié !" : "Copier"}>
+                  <ActionIcon variant="subtle" color={copied ? 'teal' : 'gray'} onClick={copy}>
+                    {copied ? <IconCheck size={18} /> : <IconCopy size={18} />}
+                  </ActionIcon>
+                </Tooltip>
+              )}
+            </CopyButton>
+          </Group>
+        )}
+
+        <Divider />
+
+        {/* INFOS CLIENT */}
         <Grid>
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <Group gap="xs">
@@ -152,7 +208,7 @@ export default function ReservationCard({
 
         <Divider />
 
-        {/* === RÉSUMÉ FINANCIER === */}
+        {/* RÉSUMÉ FINANCIER */}
         <Grid>
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <Group gap="xs">
@@ -180,64 +236,38 @@ export default function ReservationCard({
           </Grid.Col>
         </Grid>
 
-        <Divider />
-
-        {/* === DÉTAIL DES PLACES === */}
-        <Box>
-          <Text size="sm" c="dimmed" mb="sm" fw={600}>
-            Détail des places réservées
-          </Text>
-          <Stack gap="sm">
-            {places.map((place: any) => (
-              <Card
-                key={place.place_id}
-                withBorder
-                radius="sm"
-                p="sm"
-                bg="gray.0"
-              >
-                <Grid align="center">
-                  <Grid.Col span={{ base: 12, sm: 4 }}>
-                    <Group gap="xs">
-                      <ThemeIcon size="sm" radius="xl" color="indigo" variant="light">
-                        <IconTicket size={14} />
-                      </ThemeIcon>
-                      <Text size="sm" fw={500}>{place.numero}</Text>
-                    </Group>
-                  </Grid.Col>
-                  <Grid.Col span={{ base: 12, sm: 3 }}>
-                    <Badge color="indigo" variant="filled" size="sm">
-                      {place.tarif.type_place.nom}
-                    </Badge>
-                  </Grid.Col>
-                  <Grid.Col span={{ base: 12, sm: 3 }}>
-                    <Text size="sm" fw={600} c="dark">
-                      {formatPrice(place.tarif.prix)} Ar
-                    </Text>
-                  </Grid.Col>
-                  <Grid.Col span={{ base: 12, sm: 2 }}>
-                    <Badge
-                      color={place.etat_code === 'reservee' ? 'orange' : 'gray'}
-                      variant="light"
-                      size="sm"
-                    >
-                      {place.etat_code === 'reservee'
-                        ? 'Réservée'
-                        : place.etat_description}
-                    </Badge>
-                  </Grid.Col>
-                </Grid>
-              </Card>
-            ))}
-          </Stack>
-        </Box>
-
-        {/* === STATUT PAIEMENT === */}
-        {etat_code === 'en_attente' && (
-          <Box mt="md">
-            <Badge color="yellow" variant="filled" size="md" fullWidth>
-              Paiement en attente – Places bloquées temporairement
-            </Badge>
+        {/* DÉTAIL DES PLACES */}
+        {places && places.length > 0 && (
+          <Box>
+            <Text size="sm" c="dimmed" mb="sm" fw={600}>
+              Détail des places réservées
+            </Text>
+            <Stack gap="sm">
+              {places.map((place: any) => (
+                <Card key={place.place_id} withBorder radius="sm" p="sm" bg="gray.0">
+                  <Grid align="center">
+                    <Grid.Col span={{ base: 12, sm: 4 }}>
+                      <Group gap="xs">
+                        <ThemeIcon size="sm" radius="xl" color="indigo" variant="light">
+                          <IconTicket size={14} />
+                        </ThemeIcon>
+                        <Text size="sm" fw={500}>{place.numero}</Text>
+                      </Group>
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 3 }}>
+                      <Badge color="indigo" variant="filled" size="sm">
+                        {place.tarif.type_place.nom}
+                      </Badge>
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 3 }}>
+                      <Text size="sm" fw={600} c="dark">
+                        {formatPrice(place.tarif.prix)} Ar
+                      </Text>
+                    </Grid.Col>
+                  </Grid>
+                </Card>
+              ))}
+            </Stack>
           </Box>
         )}
       </Stack>

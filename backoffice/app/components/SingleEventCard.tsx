@@ -14,6 +14,7 @@ import event1 from "../assets/Foaran_ny_fetin_ny_reny.jpg";
 import { notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
 import {base64ToDataUrl} from "~/utils/base64"; 
+import { path_to_vitrine } from '~/constants/app';
 
 dayjs.locale('fr');
 
@@ -70,7 +71,7 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
       <Modal
         opened={opened}
         onClose={() => !mutation.isPending && setOpened(false)}
-        title="Réserver une place"
+        
         centered
         closeOnClickOutside={!mutation.isPending}
       >
@@ -86,7 +87,7 @@ export function SingleEventCard({ event, forUser }: { event: evenement; forUser?
         {/* === EN-TÊTE === */}
         <Card.Section className={classes.section} mt="md">
           <Group justify="apart" align="center">
-            <Link to={forUser ? '/event' : 'https://renyevents.vercel.app/'}>
+            <Link to={forUser ? '/event' : path_to_vitrine}>
               <IconArrowLeft size={20} color="red" style={{ cursor: 'pointer' }} />
             </Link>
             <Text fz="xl" fw={700} style={{ flex: 1, textAlign: 'center' }}>

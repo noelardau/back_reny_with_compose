@@ -8,11 +8,14 @@ import {
   Select,
   NumberInput,
   Stack,
+  Alert,
+  Text
 } from '@mantine/core';
-import { IconTrash } from '@tabler/icons-react';
+import { IconInfoCircle, IconTrash } from '@tabler/icons-react';
 import { useState, useEffect } from 'react';
 // import {type_place} from "~/constants/app";
 import type { evenement } from '~/interfaces/evenement';
+import { tel_paiement } from '~/constants/app';
 
 type PlaceDemandee = {
   type_place_id: string;
@@ -136,7 +139,8 @@ export function ReservationForm({
   return (
     <Box component="form" onSubmit={form.onSubmit(handleSubmit)} maw={500}>
       
-      <Stack gap="md">
+      <Stack gap="sm">
+        <Text>Faire une réservation</Text>
         <TextInput
           label="Email"
           placeholder="client@example.com"
@@ -184,6 +188,25 @@ export function ReservationForm({
         <Button variant="outline" onClick={addPlaceField} size="sm" w="fit-content">
           + Ajouter un type de place
         </Button>
+        <Alert
+        icon={<IconInfoCircle size={18} />}
+        title="Comment payer ?"
+        color="blue"
+        radius="md"
+        variant="light"
+      >
+        <Text size="sm" fw={500}>
+          Envoyez le montant total sur le numéro suivant :
+        </Text>
+        <Text size="sm" mt={8}>
+          • <strong>MVola</strong> : <Text span fw={700} c="blue">{tel_paiement.mvola}</Text>
+        </Text>
+        <Text size="xs" c="dimmed" mt="xs">
+          Indiquez ensuite la référence de paiement exacte dans le champ ci-dessous.
+        </Text>
+      </Alert>
+
+     
 
          <TextInput
           label="Référence de paiement"
