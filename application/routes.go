@@ -33,5 +33,6 @@ func SetupRoutes(r chi.Router, evenementService interfaces.EvenementService, aut
 		r.Get("/reservation/{id}", handler.GetReservationByID(evenementService))
 		r.Get("/type_places", handler.GetTypePlacesHandler(evenementService))
 		r.Get("/type_evenements", handler.GetAllTypeEvenementsHandler(evenementService))
+		r.Post("/reservation/mark/{id}", handler.MarkReservation(evenementService))
 	})
 }

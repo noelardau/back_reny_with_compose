@@ -144,6 +144,21 @@ func (repo EvenementRepository) GetReservationByID(reservationID uuid.UUID) (*mo
 }
 
 
+func (repo EvenementRepository) MarkReservation(id_reservation uuid.UUID) (uuid.UUID, error)  {
+    _, err := repo.conn.Exec(
+        context.Background(),
+        `UPDATE public.reservation 
+            SET etat_code='checked'::character varying, 
+                etat='checked'::character varying
+            WHERE id=$1;`, 
+        id_reservation)
+    if err != nil {
+        return uuid.Nil, err
+    }
+    return id_reservation, nil
+}
+
+
 func parseFlexibleTime(timeStr string) (time.Time, error) {
     formats := []string{
         time.RFC3339,                    // "2006-01-02T15:04:05Z07:00"

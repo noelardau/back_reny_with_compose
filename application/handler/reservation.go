@@ -114,6 +114,44 @@ func ValiderReservation(service interfaces.EvenementService) http.HandlerFunc {
     }
 }
 
+
+
+func MarkReservation(service interfaces.EvenementService) http.HandlerFunc {
+    return func(w http.ResponseWriter, req *http.Request) {
+        if req.Method != http.MethodPost {
+            http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+            return
+        }
+
+        reservation_id_string := chi.URLParam(req, "id") 
+        id_reservation, err := uuid.Parse(reservation_id_string)
+        if err != nil {
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusBadRequest)
+            json.NewEncoder(w).Encode(models.ErrorResponse{
+                Error: "ID événement invalide",
+            })
+            return
+        }
+
+        err = service.MarkReservation(id_reservation)
+        if err != nil {
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusBadRequest)
+            json.NewEncoder(w).Encode(models.ErrorResponse{
+                Error: err.Error(),
+            })
+            return
+        }
+
+
+        w.WriteHeader(http.StatusOK)
+        w.Write([]byte("ok"))
+    }
+} 
+
+
+
 func GetReservationByID(service interfaces.EvenementService) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         reservationIDStr := chi.URLParam(r, "id")

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
 	"github.com/J2d6/reny_event/domain/models"
 	"github.com/google/uuid"
 )
+
 
 
 func (service EvenementService) Reserver(req *http.Request) (string, error) {
@@ -33,9 +33,15 @@ func (service EvenementService) GetAllReservationsFor(evenement_id uuid.UUID)([]
     return reservations, nil
 }
 
-
 func (serrvice EvenementService) ValidateReservation(id_Evenement uuid.UUID) error {
     if err := serrvice.repo.ValidateReservation(id_Evenement); err != nil {
+        return err
+    }
+    return  nil
+}
+
+func (serrvice EvenementService) MarkReservation(id_reservation uuid.UUID) error {
+    if _,err := serrvice.repo.MarkReservation(id_reservation); err != nil {
         return err
     }
     return  nil
@@ -48,7 +54,6 @@ func (service EvenementService) GetReservationByID(reservationID uuid.UUID) (*mo
     }
     return reservation, nil
 }
-
 
 func mapRequeteReservation(r *http.Request) (models.ReservationRequest, error) {
     var req models.ReservationRequest
