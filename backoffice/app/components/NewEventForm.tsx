@@ -151,6 +151,7 @@ export function NewEventForm() {
           title: 'Événement créé !',
           message: `${values.titre} a été ajouté avec succès.`,
           color: 'green',
+          position:"bottom-right",
           icon: <IconPlus size={18} />,
         });
 

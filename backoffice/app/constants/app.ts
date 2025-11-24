@@ -1,12 +1,9 @@
-  export const type_evenement = [
-    { value: '"08fc5d20-89f5-490f-9f19-f31bf0505521"', label: 'Exposition' },
-    { value: '"241a7483-f80c-4d96-bad8-8f2938a0a9e4"', label: 'Foire' },
-  ];
 
-  export const type_place = [
-    { value: "45ce9709-c417-4da5-af28-3816348295cd", label: 'Standard' },
-    { value: "3d91ee51-7696-4634-a3c3-3d7ab7d376bd", label: 'VIP' },
-  ];
 
-  export const Id_event_added = "c988e859-1f0e-4596-99af-fdb32cf386cd"
+export const tel_paiement = {
+  mvola: "034 77 175 42",
+  orangeMoney: "032 50 226 27"
+}
 
+
+export const path_to_vitrine = "http://localhost:3002"

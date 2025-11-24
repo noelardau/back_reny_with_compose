@@ -30,6 +30,10 @@ export default function Resa({loaderData}: Route.ComponentProps) {
 
   // console.log(reservation);
 
+  function MarkAsUsed(){
+    
+  }
+
   
 
 
@@ -49,7 +53,7 @@ export default function Resa({loaderData}: Route.ComponentProps) {
   }
   return <Container my="md" size="md" pt={100}>
              
-    <ReservationCard reservation={reservation} forUser={forUser}></ReservationCard>
+    <ReservationCard reservation={reservation} forUser={forUser} onMarkAsUsed={MarkAsUsed}></ReservationCard>
      </Container>
   
   

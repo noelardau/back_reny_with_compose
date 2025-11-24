@@ -54,6 +54,7 @@ export function TableResa({ reservations }: { reservations: reservation[] }) {
                 color: 'green',
                 icon: <IconCheck size={18} />,
                 autoClose: 5000,
+                position:"bottom-right"
               });
               queryClient.invalidateQueries({queryKey:['resa']});
         return next;

@@ -14,5 +14,6 @@ export const api_paths = {
     getReservationById: (id_reservation:string) => `${API_BASE_URL}/reservation/${id_reservation}`,
     getTypePlace: `${API_BASE_URL}/type_places`,
     getTypeEvenement: `${API_BASE_URL}/type_evenements`,
+    markResaToUsed: `${API_BASE_URL}/reservation/in`
 }
 
